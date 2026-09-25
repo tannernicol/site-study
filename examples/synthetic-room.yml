@@ -1,0 +1,13 @@
+# Synthetic measurements only; not an as-built record.
+project: Sample remodel
+source: synthetic example
+measured_on: 2026-09-24
+existing_basement: false
+rooms:
+  - name: Study
+    space_type: habitable
+    length_in: 120
+    width_in: 120
+    clear_height_in: 96
+    requires_eero: false
+stairs: []

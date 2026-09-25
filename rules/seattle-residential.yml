@@ -1,0 +1,178 @@
+# Seattle residential code checks for basement finish / habitable space.
+#
+# CONFIDENCE LEGEND (do not strip — the tool prints it):
+#   verified   — sourced from an SDCI/Seattle.gov document, cited below
+#   likely     — standard IRC/WA provision, near-certain but not read from the
+#                current Seattle amendment
+#   unverified — placeholder, MUST be confirmed before relying on it
+#
+# CODE CYCLE WARNING: the Appendix J text below was read from the 2012 Seattle
+# Residential Code PDF. Seattle has adopted later cycles. Confirm the current
+# SRC edition at SDCI before submitting anything. This tool is a design-stage
+# sanity check, NOT a code compliance determination.
+
+meta:
+  jurisdiction: Seattle, WA
+  code_cycle_confirmed: false
+  # The edition these numbers were actually read from — NOT the date someone
+  # last looked at this file. Seattle has adopted later cycles; until someone
+  # confirms against the current SRC and sets code_cycle_confirmed, every run
+  # says so out loud.
+  source_edition: 2012 Seattle Residential Code
+  last_reviewed: 2026-08-06
+
+units:
+  length: inches
+  area: square_feet
+
+checks:
+  - id: ceiling_height_existing_basement
+    label: Ceiling height — habitable space in an EXISTING basement
+    confidence: verified
+    applies_when: { space_type: habitable, existing_basement: true }
+    min_clear_height_in: 80          # 6'-8"
+    min_under_obstruction_in: 76     # 6'-4" — beams, ducts, girders may project here
+    citation: 2012 Seattle Residential Code, Appendix J (Existing Buildings and Structures)
+    note: >
+      space is 7'-0"; existing basements get 6'-8" with obstructions to 6'-4".
+
+  - id: ceiling_height_new_habitable
+    label: Ceiling height — NEW habitable space (not an existing basement)
+    confidence: likely
+    applies_when: { space_type: habitable, existing_basement: false }
+    min_clear_height_in: 84          # 7'-0"
+    citation: Seattle Residential Code, habitable space minimums
+
+  - id: ceiling_height_basement_apartment
+    label: Ceiling height — basement APARTMENT / AADU
+    confidence: verified
+    applies_when: { space_type: dwelling_unit }
+    min_clear_height_in: 84          # 7'-0" — the Appendix J relief does NOT apply
+    citation: SDCI basement apartment guidance
+    note: Converting to a separate dwelling unit forfeits the 6'-8" allowance.
+
+  - id: egress_opening
+    label: Emergency escape & rescue opening (sleeping rooms + basements)
+    confidence: verified
+    applies_when: { requires_eero: true }
+    min_net_clear_width_in: 20
+    min_net_clear_height_in: 24
+    max_sill_height_in: 44
+    min_net_clear_area_sqft: 5.7
+    field_confidence:
+      # The dimensional minimums came straight off the SDCI checklist. The
+      # AREA minimum did not — it is the standard IRC figure (5.0 permitted at
+      # the grade floor), so it is reported as weaker than the rest of this
+      # rule rather than riding on the checklist's citation.
+      min_net_clear_area_sqft: likely
+    citation: SDCI Subject-to-Field-Inspection Permit Checklist (single family / duplex)
+    note: >
+      20"x24" alone does NOT satisfy the area minimum (3.33 sqft). Both the
+      dimensional minimums AND the area minimum must be met simultaneously.
+
+  - id: window_well
+    label: Window well at below-grade egress opening
+    confidence: verified
+    applies_when: { requires_eero: true, sill_below_grade: true }
+    min_horizontal_dimension_in: 36  # 3'-0"
+    min_area_sqft: 9
+    ladder_required_if_depth_over_in: 44
+    field_confidence:
+      # Only the 3'x3' dimension is quoted by the SDCI checklist; the area and
+      # ladder-depth figures are standard IRC and carry less weight here.
+      min_area_sqft: likely
+      ladder_required_if_depth_over_in: likely
+    citation: SDCI STFI checklist — "minimum 3'x3' window well" when sill is below grade
+
+  - id: habitable_room_size
+    label: Minimum habitable room dimensions
+    confidence: likely
+    applies_when: { space_type: habitable }
+    min_area_sqft: 70
+    min_horizontal_dimension_in: 84  # 7'-0" in any direction
+    citation: IRC R304 as adopted
+
+  - id: light_and_ventilation
+    label: Natural light and ventilation
+    confidence: likely
+    applies_when: { space_type: habitable }
+    min_glazing_pct_of_floor_area: 8
+    min_openable_pct_of_floor_area: 4
+    citation: IRC R303 as adopted
+    note: Mechanical ventilation may substitute for the openable area. Verify with SDCI.
+
+  - id: stairs
+    label: Stairway geometry
+    confidence: likely
+    applies_when: { element: stair }
+    min_headroom_in: 80              # 6'-8"
+    max_riser_in: 7.75
+    min_tread_in: 10
+    min_width_in: 36
+    citation: IRC R311 as adopted
+    note: >
+      Pre-1920 houses frequently fail riser/tread. Existing stairs may be
+      grandfathered; replacing them is not. Flag, do not fail the design.
+
+  - id: alarms
+    label: Smoke and CO alarms
+    confidence: likely
+    applies_when: { space_type: habitable }
+    smoke_alarm_each_sleeping_room: true
+    smoke_alarm_outside_sleeping_area: true
+    smoke_alarm_each_level: true
+    co_alarm_outside_sleeping_area: true
+    citation: IRC R314/R315 as adopted
+
+  - id: insulation
+    label: Basement wall / slab insulation (WA State Energy Code)
+    confidence: unverified
+    applies_when: { element: envelope }
+    below_grade_wall_r_value: null
+    slab_edge_r_value: null
+    citation: NEEDS CITATION — pull current WSEC residential prescriptive table
+    note: >
+      DELIBERATELY BLANK. Do not guess R-values; a wrong number here becomes a
+      wrong insulation order. Fill from the current WSEC table before use.
+
+  - id: zoning_lr1_m_development_standards
+    label: LR1 (M) lowrise multifamily development standards
+    confidence: likely
+    applies_when: { element: zoning, zone: "LR1 (M)" }
+    max_far: 1.3
+    max_height_ft: 30
+    front_setback_avg_ft: 7
+    front_setback_min_ft: 5
+    side_setback_ft: 5
+    rear_setback_no_alley_ft: 7
+    rear_setback_with_alley_ft: 0
+    max_facade_pct_of_lot_line: 65
+    field_confidence:
+      # Every number here came off SDCI's own plain-language summary PDF,
+      # not the statute text (SMC 23.45) itself -- one notch below the
+      # verified basement-code entries above, which quote SDCI checklists
+      # or code sections directly. SMC 23.45.518 governs the modifiers
+      # (e.g. facade-length averaging, alley-adjacency rules) referenced
+      # but not reproduced verbatim here.
+      max_far: likely
+      max_height_ft: likely
+      front_setback_avg_ft: likely
+      front_setback_min_ft: likely
+      side_setback_ft: likely
+      rear_setback_no_alley_ft: likely
+      rear_setback_with_alley_ft: likely
+      max_facade_pct_of_lot_line: likely
+    # No bare URL in citation: (internal/check's --html report renders this
+    # field verbatim into a single self-contained file with a zero-network-
+    # request guarantee, enforced by TestRunHTMLOutputIsSelfContainedAndCitesEveryFinding
+    # grepping the output for "https?://" -- the URL lives in note: below
+    # instead, which that report never renders).
+    citation: >
+      SDCI "Seattle's Lowrise Multifamily Zones" summary (development
+      standards table), plus SMC 23.45.518 for the setback and
+      facade-length modifiers.
+    note: >
+      Summary PDF: https://www.seattle.gov/documents/Departments/SDCI/Codes/MultifamilyZoningSummary.pdf
+      This is a summary-document reading of a lowrise standard, not a site-specific SDCI determination -- confirm
+      against SMC 23.45 (and any applicable Mandatory Housing Affordability
+      or Design Review overlay) before relying on it for a real permit set.

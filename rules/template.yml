@@ -1,0 +1,33 @@
+# Generic residential design-stage rules example.
+#
+# These illustrative limits are intentionally marked unverified: a project
+# must supply rules sourced from its adopted local code before relying on a
+# finding. This file demonstrates the YAML schema only.
+meta:
+  jurisdiction: Example jurisdiction
+  code_cycle_confirmed: false
+  source_edition: Replace with the locally adopted residential code
+  last_reviewed: 2026-09-24
+
+units:
+  length: inches
+  area: square_feet
+
+checks:
+  - id: habitable_room_size
+    label: Minimum habitable room dimensions
+    confidence: unverified
+    applies_when: { space_type: habitable }
+    min_area_sqft: 70
+    min_horizontal_dimension_in: 84
+    citation: Replace with an official local-code citation
+
+  - id: stairs
+    label: Stairway geometry
+    confidence: unverified
+    applies_when: { element: stair }
+    min_headroom_in: 80
+    max_riser_in: 7.75
+    min_tread_in: 10
+    min_width_in: 36
+    citation: Replace with an official local-code citation
